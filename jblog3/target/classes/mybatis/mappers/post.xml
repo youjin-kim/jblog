@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="post">
+	
+	<select id="view" parameterType="map" resultType="postvo">
+	<![CDATA[
+	select p.no, p.title, p.contents, 
+	       date_format(p.update_date, '%Y-%m-%d %h:%i:%s') as updateDate, p.category_no
+	  from post p
+	  join category c, blog b
+	 where p.category_no = c.no
+	   and c.id = b.id
+	   and c.id = #{id}
+	]]>
+	<choose>
+		<when test="postNo gt 0 and categoryNo gt 0">
+		<![CDATA[
+		   	and p.no = #{postNo}
+		]]>
+		</when>
+		<when test="categoryNo gt 0">
+		<![CDATA[
+			and p.no = ( select min(no)
+						   from post
+						  where post.category_no = #{categoryNo}
+				       )
+		]]>
+		</when>
+		<otherwise>
+		<![CDATA[
+		   and p.no = ( select min(post.no)
+		   				  from post
+		   				  join category
+		   				 where post.category_no = category.no
+		   				   and category.id = #{id}
+		   			  )  	
+		]]>
+		</otherwise>
+	</choose>
+	</select>
+	
+	<select id="getList" parameterType="map" resultType="postvo">
+	<![CDATA[
+	select p.no, p.title, p.contents, 
+	       date_format(p.update_date, '%Y-%m-%d %h:%i:%s') as updateDate, p.category_no as categoryNo
+	  from post p
+right join category c
+        on p.category_no = c.no
+	 where c.id = #{id}
+	]]>
+	<if test="categoryNo gt 0">
+	<![CDATA[
+       and p.category_no = #{categoryNo};
+	]]>
+	</if>
+	</select>
+	
+	<select id="getListCount" parameterType="long" resultType="int">
+	<![CDATA[
+	select count(*)
+	  from post p
+	  join category c
+	 where p.category_no = c.no
+	   and c.no = #{categoryNo }
+	]]>
+	</select>
+	
+	<insert id="insert"  parameterType="postvo">
+		<![CDATA[
+		insert 
+		  into post
+		values(null, #{title }, #{contents }, now(), #{categoryNo })
+		]]>
+	</insert>
+	
+</mapper>

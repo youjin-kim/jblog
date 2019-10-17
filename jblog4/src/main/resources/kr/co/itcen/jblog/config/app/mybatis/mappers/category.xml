@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="category">
+
+	<insert id="insert"  parameterType="categoryvo">
+		<![CDATA[
+		insert 
+		  into category
+		values(null, #{name }, #{explain }, now(), #{blogId })
+		]]>
+	</insert>
+	
+	<select id="getList" parameterType="string" resultType="categoryvo">
+	<![CDATA[
+	select c.no, c.name, c.explain, count(p.no) as countPost,
+	       date_format(c.update_date, '%Y-%m-%d %h:%i:%s') as updateDate
+	  from post p
+right join category c
+	    on p.category_no = c.no
+	 where c.id = #{blogId}
+  group by c.no
+  order by c.update_date desc
+	]]>
+	</select>
+	
+	<delete id="delete" parameterType="map">
+	<![CDATA[
+		delete 
+		  from category
+	     where no = #{categoryNo}
+	       and id = #{id}
+		]]>
+	</delete>
+
+</mapper>
